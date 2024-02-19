@@ -15,7 +15,7 @@ import { MessageDto } from "./dto/message.dto";
 
 @WebSocketGateway({
   cors: {
-    origin: "http://localhost:3000",
+    origin: "https://next-new-nu.vercel.app/",
     methods: ["GET", "POST"],
     credentials: true,
   },
