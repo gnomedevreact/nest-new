@@ -1,0 +1,42 @@
+//schema.prisma
+
+datasource db {
+  provider  = "postgresql"
+  url  	    = env("DATABASE_URL")
+  directUrl = env("DIRECT_URL")
+}
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+model User {
+  id        String      @id @default(cuid())
+  email     String      @unique
+  password  String?
+  isAdmin   Boolean     @default(false)
+  posts     Post[]
+  rooms     Room[]
+}
+
+model Post {
+  id        String      @id @default(cuid())
+  title     String    
+  user      User?       @relation(fields: [userId], references: [id])
+  userId    String?
+}
+
+model Room {
+  id        String      @id @default(cuid())
+  users     User[]      
+  messages  Message[]
+}
+
+model Message {
+  id        String      @id @default(cuid())
+  message   String
+  from_id   String
+  to_id     String
+  room      Room        @relation(fields: [roomId], references: [id])
+  roomId    String
+}
