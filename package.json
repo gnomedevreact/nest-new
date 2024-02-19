@@ -27,7 +27,6 @@
     "@nestjs/passport": "^10.0.3",
     "@nestjs/platform-express": "^10.0.0",
     "@nestjs/platform-socket.io": "^10.3.3",
-    "@nestjs/swagger": "^7.3.0",
     "@nestjs/websockets": "^10.3.3",
     "@prisma/client": "^5.9.1",
     "argon2": "^0.31.2",
