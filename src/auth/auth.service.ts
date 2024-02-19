@@ -159,7 +159,7 @@ export class AuthService {
 
     res.cookie(this.REFRESH_TOKEN_NAME, refreshToken, {
       httpOnly: true,
-      domain: "https://nest-new.onrender.com",
+      domain: "nest-new.onrender.com",
       expires: expiresIn,
       secure: true,
       sameSite: "none",
@@ -169,7 +169,7 @@ export class AuthService {
   removeRefreshTokenFromResponse(res: Response) {
     res.cookie(this.REFRESH_TOKEN_NAME, "", {
       httpOnly: true,
-      domain: "https://nest-new.onrender.com",
+      domain: "nest-new.onrender.com",
       expires: new Date(0),
       secure: true,
       sameSite: "none",
