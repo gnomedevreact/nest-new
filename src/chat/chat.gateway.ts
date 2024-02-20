@@ -12,7 +12,9 @@ import {
 
 import { ChatService } from "./chat.service";
 import { MessageDto } from "./dto/message.dto";
+import { RoomDto } from "./dto/room.dto";
 
+// https://next-new-nu.vercel.app
 @WebSocketGateway({
   cors: {
     origin: "https://next-new-nu.vercel.app",
@@ -37,6 +39,20 @@ export class ChatGateway implements OnGatewayInit {
     console.log(dto);
     this.server.to(dto.roomId).emit("message", dto);
     this.ChatService.createMessage(dto);
+  }
+
+  @SubscribeMessage("create-room")
+  async createRoom(@MessageBody() dto: RoomDto) {
+    console.log("OK");
+    const room_response = await this.ChatService.createRoom(dto);
+
+    const data = {
+      id: room_response.id,
+      messages: [],
+      users: dto.userIds,
+    };
+
+    this.server.emit("join-call", data);
   }
 
   @SubscribeMessage("join-room")
