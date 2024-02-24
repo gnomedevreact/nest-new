@@ -1,4 +1,5 @@
 import { Injectable } from "@nestjs/common";
+import { withAccelerate } from "@prisma/extension-accelerate";
 
 import { PrismaService } from "../../db/prisma.service";
 import { MessageDto } from "./dto/message.dto";
@@ -9,7 +10,9 @@ export class ChatService {
   constructor(private readonly PrismaService: PrismaService) {}
 
   async createRoom(dto: RoomDto) {
-    const room = await this.PrismaService.room.findFirst({
+    const room = await this.PrismaService.$extends(
+      withAccelerate()
+    ).room.findFirst({
       where: {
         users: {
           every: {
@@ -19,29 +22,34 @@ export class ChatService {
           },
         },
       },
+      include: {
+        users: true,
+      },
+      cacheStrategy: { swr: 60, ttl: 60 },
     });
 
     if (room) {
-      return {
-        id: room.id,
-      };
+      return room;
     }
 
-    const newRoom = await this.PrismaService.room.create({
+    const newRoom = await this.PrismaService.$extends(
+      withAccelerate()
+    ).room.create({
       data: {
         users: {
           connect: dto.userIds.map((userId) => ({ id: userId })),
         },
       },
+      include: {
+        users: true,
+      },
     });
 
-    return {
-      id: newRoom.id,
-    };
+    return newRoom;
   }
 
   async getRooms(userId: string) {
-    return await this.PrismaService.room.findMany({
+    return await this.PrismaService.$extends(withAccelerate()).room.findMany({
       where: {
         users: {
           some: {
@@ -51,18 +59,17 @@ export class ChatService {
       },
       include: {
         messages: true,
-        users: {
-          select: {
-            id: true,
-          },
-        },
+        users: true,
       },
+      cacheStrategy: { swr: 60, ttl: 60 },
     });
   }
 
   async createMessage(dto: MessageDto) {
     try {
-      const message = await this.PrismaService.message.create({
+      const message = await this.PrismaService.$extends(
+        withAccelerate()
+      ).message.create({
         data: dto,
       });
 
@@ -73,9 +80,12 @@ export class ChatService {
   }
 
   async getById(id: string) {
-    const room = await this.PrismaService.room.findUnique({
+    const room = await this.PrismaService.$extends(
+      withAccelerate()
+    ).room.findUnique({
       where: { id },
       include: { messages: true, users: true },
+      cacheStrategy: { swr: 60, ttl: 60 },
     });
 
     return room;

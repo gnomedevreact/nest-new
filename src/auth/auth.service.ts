@@ -9,6 +9,7 @@ import {
   UnauthorizedException,
 } from "@nestjs/common";
 import { JwtService } from "@nestjs/jwt";
+import { withAccelerate } from "@prisma/extension-accelerate";
 
 import { AuthDto } from "./dto/auth.dto";
 
@@ -23,8 +24,11 @@ export class AuthService {
   ) {}
 
   async register(dto: AuthDto) {
-    const isExist = await this.PrismaService.user.findFirst({
+    const isExist = await this.PrismaService.$extends(
+      withAccelerate()
+    ).user.findFirst({
       where: { email: dto.email },
+      cacheStrategy: { swr: 60, ttl: 60 },
     });
 
     if (isExist) {
@@ -33,7 +37,9 @@ export class AuthService {
 
     const password = await argon2.hash(dto.password);
 
-    const user = await this.PrismaService.user.create({
+    const user = await this.PrismaService.$extends(
+      withAccelerate()
+    ).user.create({
       data: {
         email: dto.email,
         password,
@@ -49,8 +55,11 @@ export class AuthService {
   }
 
   async login(dto: AuthDto) {
-    const user = await this.PrismaService.user.findFirst({
+    const user = await this.PrismaService.$extends(
+      withAccelerate()
+    ).user.findFirst({
       where: { email: dto.email },
+      cacheStrategy: { swr: 60, ttl: 60 },
     });
 
     if (!user) {
@@ -72,14 +81,18 @@ export class AuthService {
   }
 
   async delete(id: string) {
-    const user = await this.PrismaService.user.findUnique({ where: { id } });
+    const user = await this.PrismaService.$extends(
+      withAccelerate()
+    ).user.findUnique({ where: { id }, cacheStrategy: { swr: 60, ttl: 60 } });
 
     if (!user) {
       throw new NotFoundException("user was not found");
     }
 
     try {
-      await this.PrismaService.user.delete({ where: { id } });
+      await this.PrismaService.$extends(withAccelerate()).user.delete({
+        where: { id },
+      });
 
       return {
         message: "user was successfully deleted",
@@ -109,8 +122,11 @@ export class AuthService {
       throw new UnauthorizedException("invalid refresh token");
     }
 
-    const user = await this.PrismaService.user.findFirst({
+    const user = await this.PrismaService.$extends(
+      withAccelerate()
+    ).user.findFirst({
       where: { id: result.id },
+      cacheStrategy: { swr: 60, ttl: 60 },
     });
 
     const tokens = await this.issueTokenPair(user.id);
@@ -122,8 +138,11 @@ export class AuthService {
   }
 
   async googleSignIn(user: any) {
-    const dbUser = await this.PrismaService.user.findUnique({
+    const dbUser = await this.PrismaService.$extends(
+      withAccelerate()
+    ).user.findUnique({
       where: { email: user.email },
+      cacheStrategy: { swr: 60, ttl: 60 },
     });
 
     if (!dbUser) {
@@ -139,7 +158,9 @@ export class AuthService {
   }
 
   async googleRegister(user: any) {
-    const dbUser = await this.PrismaService.user.create({
+    const dbUser = await this.PrismaService.$extends(
+      withAccelerate()
+    ).user.create({
       data: {
         email: user.email,
       },
@@ -159,7 +180,7 @@ export class AuthService {
 
     res.cookie(this.REFRESH_TOKEN_NAME, refreshToken, {
       httpOnly: true,
-      domain: "next-new-nu.vercel.app",
+      domain: process.env.FRONT_URL_NONE_PREFIX,
       expires: expiresIn,
       secure: true,
       sameSite: "none",
@@ -169,7 +190,7 @@ export class AuthService {
   removeRefreshTokenFromResponse(res: Response) {
     res.cookie(this.REFRESH_TOKEN_NAME, "", {
       httpOnly: true,
-      domain: "next-new-nu.vercel.app",
+      domain: process.env.FRONT_URL_NONE_PREFIX,
       expires: new Date(0),
       secure: true,
       sameSite: "none",

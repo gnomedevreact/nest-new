@@ -39,4 +39,5 @@ model Message {
   to_id     String
   room      Room        @relation(fields: [roomId], references: [id])
   roomId    String
+  image     Boolean     @default(false)
 }

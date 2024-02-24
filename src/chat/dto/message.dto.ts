@@ -1,4 +1,4 @@
-import { IsString } from "class-validator";
+import { IsBoolean, IsString } from 'class-validator';
 
 export class MessageDto {
   @IsString()
@@ -12,4 +12,7 @@ export class MessageDto {
 
   @IsString()
   roomId: string;
+
+  @IsBoolean()
+  image: boolean;
 }

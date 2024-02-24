@@ -14,10 +14,9 @@ import { ChatService } from "./chat.service";
 import { MessageDto } from "./dto/message.dto";
 import { RoomDto } from "./dto/room.dto";
 
-// https://next-new-nu.vercel.app
 @WebSocketGateway({
   cors: {
-    origin: "https://next-new-nu.vercel.app",
+    origin: "*",
     methods: ["GET", "POST"],
     credentials: true,
   },
@@ -49,8 +48,10 @@ export class ChatGateway implements OnGatewayInit {
     const data = {
       id: room_response.id,
       messages: [],
-      users: dto.userIds,
+      users: room_response.users,
     };
+
+    console.log(data);
 
     this.server.emit("join-call", data);
   }
